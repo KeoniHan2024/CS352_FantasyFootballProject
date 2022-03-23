@@ -1,9 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
 from tracemalloc import start
+from turtle import down
 from numpy import dtype
 import pandas as pd
 import seaborn as sns
+import os
 
 root = Tk()
 titleFont = ("Minion Pro Cond", 20)
@@ -12,11 +14,10 @@ titleFont = ("Minion Pro Cond", 20)
 titleLabel = Label(root, text = 'NFL FANTASY FOOTBALL STAT TRACKER')
 titleLabel.config(font=titleFont)
 yearLabel = Label(root, text = 'Year')
-firstNameLabel = Label(root, text = 'First Name')
-lastNameLabel = Label(root, text = 'Last Name')
+nameLabel = Label(root, text = 'Player Name')
     
 def getURL():
-    url_format = 'https://www.basketball-reference.com/leagues/NBA_{}_per_game.html'
+    url_template = 'https://www.basketball-reference.com/leagues/NBA_{}_per_game.html'
     yearString = year.get()
     if len(year.get()) == 0:
         messagebox.showerror("ERROR", "Year is not Entered")
@@ -28,28 +29,45 @@ def getURL():
         messagebox.showerror("ERROR", "Year is less than 1970")
         return
 
-    if int(yearString):
-        ##Have it format the HTMLS and get the max of every statistic
+    #Foramts the URL with the correct year in it
+    url= url_template.format(yearString)
+    html = pd.read_html(url, header = 0)
+    dfCurrent = html[0]
+
+    #cleans Data by removing the headers by finding where Age text occurs
+    rawData = dfCurrent.drop(dfCurrent[dfCurrent.Age == 'Age'].index)
+    df = rawData.fillna(0)  #Fills the empty/NA frames with 0
+    
+    #Removes the columns ORB AND DRB (offensive and defensive Rebounds)
+    df = df.drop(['ORB'], axis = 1)
+    df = df.drop(['DRB'], axis = 1)
+    df = df.drop(['GS'], axis = 1)
+    df = df.drop(['FTA'], axis = 1)
+    pd.set_option('display.max_rows', None)
+    mainEntry.insert(END,df)
+
+    #Reads it to a csv file named by year and reads it
+    fileName = 'NBA{}Stats'
+    dataFolderPath = os.path.join(os.getcwd(), "Data_Sheets")
+    df.to_csv(os.path.join(dataFolderPath,fileName.format(yearString)), index = False)
+    #df = pd.read_csv(dataFolderPath, fileName.format(year))
+    
 
 #Entries
 year = Entry(root)
-firstName = Entry(root)
-lastName = Entry(root)
-mainEntry = Text(root, height=20, width=200)
+name = Entry(root)
+mainEntry = Text(root, height=50, width=200)
 #Buttons
-getInfoButton = Button(text = "Get Info", command = getURL)
+downloadDataButton = Button(text = "Download Data", command = getURL)
 
 def createGUI():
     #Grids
-    titleLabel.grid(row = 0, column = 1, columnspan=2)
+    titleLabel.grid(row = 0, column = 0, columnspan=3)
     mainEntry.grid(row=1,rowspan=3, column = 0, columnspan=5)
     yearLabel.grid(row = 4, column = 0)
-    firstNameLabel.grid(row = 4, column = 2)
-    lastNameLabel.grid(row = 4, column = 3)
+    nameLabel.grid(row = 4, column = 2)
     year.grid(row = 5, column = 0)
-    firstName.grid(row = 5, column = 2)
-    lastName.grid(row = 5, column = 3)
-    getInfoButton.grid(row = 6, column= 3)
+    name.grid(row = 5, column = 2)
+    downloadDataButton.grid(row = 6, column= 0)
     root.geometry("1500x1500")
-
     root.mainloop()
