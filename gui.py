@@ -44,14 +44,17 @@ def getURL():
     df = df.drop(['GS'], axis = 1)
     df = df.drop(['FTA'], axis = 1)
     pd.set_option('display.max_rows', None)
-    mainEntry.insert(END,df)
 
     #Reads it to a csv file named by year and reads it
     fileName = 'NBA{}Stats'
-    dataFolderPath = os.path.join(os.getcwd(), "Data_Sheets")
-    df.to_csv(os.path.join(dataFolderPath,fileName.format(yearString)), index = False)
-    df = pd.read_csv(dataFolderPath, fileName.format(year))
-    
+    df.to_csv(fileName.format(yearString), index = False)
+    currentDF = pd.read_csv(fileName.format(yearString))
+    #currentDF = currentDF.sort_values(by=['PTS'], ascending=False)
+    mainEntry.insert(END,currentDF)
+
+
+def sort_df_pts():
+    mainEntry.delete("1.0","end")
 
 #Entries
 year = Entry(root)
@@ -59,6 +62,7 @@ name = Entry(root)
 mainEntry = Text(root, height=50, width=200)
 #Buttons
 downloadDataButton = Button(text = "Download Data", command = getURL)
+sortByPts = Button(text="Sort By Pts", command = sort_df_pts)
 
 def createGUI():
     #Grids
@@ -69,5 +73,6 @@ def createGUI():
     year.grid(row = 5, column = 0)
     name.grid(row = 5, column = 2)
     downloadDataButton.grid(row = 6, column= 0)
+    sortByPts.grid(row=6, column= 1)
     root.geometry("1500x1500")
     root.mainloop()
