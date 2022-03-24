@@ -50,7 +50,7 @@ def getURL():
     fileName = 'NBA{}Stats'
     dataFolderPath = os.path.join(os.getcwd(), "Data_Sheets")
     df.to_csv(os.path.join(dataFolderPath,fileName.format(yearString)), index = False)
-    #df = pd.read_csv(dataFolderPath, fileName.format(year))
+    df = pd.read_csv(dataFolderPath, fileName.format(year))
     
 
 #Entries
